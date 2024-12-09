@@ -39,7 +39,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
-    'quiz',
     'quiz.apps.QuizConfig',
 ]
 
@@ -51,6 +50,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'quiz_backend.urls'
@@ -77,21 +77,23 @@ WSGI_APPLICATION = 'quiz_backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+from pymongo import MongoClient
+
+MONGO_CLIENT = MongoClient(
+    'mongodb+srv://remote-user:uijNe16U2k2Si4Fk@cluster0.ruula.mongodb.net/quiz_app',
+    username='remote-user',
+    password='uijNe16U2k2Si4Fk',
+    authSource='admin',
+    authMechanism='SCRAM-SHA-1'
+)
+
+MONGO_DB = MONGO_CLIENT['quiz_app']
+
 DATABASES = {
     'default': {
-        'ENGINE': 'djongo',
-        'NAME': 'quiz_app',
-        'CLIENT': {
-            'host': 'mongodb+srv://remote-user:uijNe16U2k2Si4Fk@cluster0.ruula.mongodb.net/quiz_app',
-            'port': 27017,
-            'username': 'remote-user',
-            'password': 'uijNe16U2k2Si4Fk',
-            'authSource': 'admin',
-            'authMechanism': 'SCRAM-SHA-1',
-        },
+        'ENGINE': 'django.db.backends.dummy',
     }
 }
-
 
 
 # Password validation
