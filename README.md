@@ -7,9 +7,13 @@ Hosting: AWS EC2
 
 ## Demo
 
-Demo site: [http://3.1.84.199:8000](http://3.1.84.199:8000)
+Demo API Address: [http://3.1.84.199:8000](http://3.1.84.199:8000)
 
 Demo website: [http://3.1.84.199:5173](http://3.1.84.199:5173)
+
+## React Project
+
+React prject address: [https://github.com/Jason9265/quiz-frontend](https://github.com/Jason9265/quiz-frontend)
 
 ## API Endpoints
 
