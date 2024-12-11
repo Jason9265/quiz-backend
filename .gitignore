@@ -131,6 +131,10 @@ ENV/
 env.bak/
 venv.bak/
 quiz-env/
+env-quiz/
+env-quiz/
+
+staticfiles/
 
 # Spyder project settings
 .spyderproject
