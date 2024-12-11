@@ -107,3 +107,35 @@ curl -X POST http://localhost:8000/api/auth/login/ \
 2. Passwords are currently stored as plain text (not recommended for production)
 3. No token-based authentication is implemented yet
 4. Username must be unique in the system
+
+## Quiz History Endpoints
+
+### Create Quiz History
+- **URL:** `/quiz-history/`
+- **Method:** `POST`
+- **Description:** Save a quiz attempt history
+- **Data Parameters:** Quiz history object
+- **Success Response:**
+  - **Code:** 201 CREATED
+  ```json
+  {
+    "id": "string",
+    "message": "Quiz history created successfully"
+  }
+  ```
+
+### Get User Quiz History
+- **URL:** `/quiz-history/user/{username}/`
+- **Method:** `GET`
+- **Description:** Get all quiz attempts for a specific user
+- **Success Response:**
+  - **Code:** 200 OK
+  - **Content:** Array of quiz history objects
+
+### Get Quiz History
+- **URL:** `/quiz-history/quiz/{quiz_id}/`
+- **Method:** `GET`
+- **Description:** Get all attempts for a specific quiz
+- **Success Response:**
+  - **Code:** 200 OK
+  - **Content:** Array of quiz history objects

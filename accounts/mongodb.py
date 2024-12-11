@@ -14,6 +14,7 @@ client = MongoClient("mongodb+srv://remote-user:uijNe16U2k2Si4Fk@cluster0.ruula.
 db = client[DB_NAME]
 
 users_collection = db['users']
+quiz_history_collection = db['quiz_history']
 
 def serialize_mongo_id(obj):
     if isinstance(obj, ObjectId):

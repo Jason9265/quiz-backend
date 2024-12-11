@@ -2,8 +2,8 @@ from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from .models import User
-from .serializers import UserSerializer, LoginSerializer
+from .models import User, QuizHistory
+from .serializers import UserSerializer, LoginSerializer, QuizHistorySerializer
 
 @api_view(['POST'])
 def register(request):
@@ -50,3 +50,31 @@ def login(request):
         {'error': 'Invalid credentials'}, 
         status=status.HTTP_401_UNAUTHORIZED
     )
+
+@api_view(['POST'])
+def create_quiz_history(request):
+    serializer = QuizHistorySerializer(data=request.data)
+    if serializer.is_valid():
+        history_id = QuizHistory.create_history(**serializer.validated_data)
+        if history_id:
+            return Response({
+                'id': history_id,
+                'message': 'Quiz history created successfully'
+            }, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+def get_user_quiz_history(request, username):
+    history = QuizHistory.get_user_history(username)
+
+    for item in history:
+        item['_id'] = str(item['_id'])
+    return Response(history)
+
+@api_view(['GET'])
+def get_quiz_history(request, quiz_id):
+    history = QuizHistory.get_quiz_history(quiz_id)
+
+    for item in history:
+        item['_id'] = str(item['_id'])
+    return Response(history)
