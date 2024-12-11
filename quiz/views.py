@@ -14,6 +14,8 @@ class QuizViewSet(viewsets.ViewSet):
     list: GET /api/quizzes/
     retrieve: GET /api/quizzes/{id}/
     create: POST /api/quizzes/
+    submit: POST /api/quizzes/{id}/submit/
+    attempt: GET /api/quizzes/{id}/attempt/
     update: PUT /api/quizzes/{id}/
     partial_update: PATCH /api/quizzes/{id}/
     delete: DELETE /api/quizzes/{id}/
@@ -28,7 +30,7 @@ class QuizViewSet(viewsets.ViewSet):
         if not quiz:
             return Response(status=status.HTTP_404_NOT_FOUND)
         
-        # Get questions for this quiz
+        # Get questions for this quiz matching the quiz_id
         questions = list(questions_collection.find({'quiz_id': ObjectId(pk)}))
         quiz['questions'] = questions
         
@@ -42,6 +44,93 @@ class QuizViewSet(viewsets.ViewSet):
             quiz = quizzes_collection.find_one({'_id': ObjectId(quiz_id)})
             return Response(QuizSerializer(quiz).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    # endpoint for answer submission
+    @action(detail=True, methods=['post'])
+    def submit(self, request, pk=None):
+        quiz = quizzes_collection.find_one({'_id': ObjectId(pk)})
+        if not quiz:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        questions = list(questions_collection.find({'quiz_id': ObjectId(pk)}))
+        
+        total_points = 0
+        earned_points = 0
+        results = []
+
+        submitted_answers = request.data.get('answers', [])
+        
+        for answer in submitted_answers:
+            question_id = answer.get('question_id')
+            submitted_answer = answer.get('answer')
+            
+            question = next(
+                (q for q in questions if str(q['_id']) == question_id), 
+                None
+            )
+            
+            if not question:
+                continue
+
+            total_points += question['points']
+            is_correct = False
+            
+            if question['question_type'] == 'single':
+                is_correct = (
+                    submitted_answer == question['options']['correct_answer']
+                )
+            elif question['question_type'] == 'multiple':
+                correct_answers = set(question['options']['correct_answer'])
+                submitted_set = set(submitted_answer if isinstance(submitted_answer, list) else [submitted_answer])
+                is_correct = correct_answers == submitted_set
+            elif question['question_type'] == 'word_select':
+                correct_words = set(question['word_select_text']['correct_words'])
+                submitted_set = set(submitted_answer if isinstance(submitted_answer, list) else [submitted_answer])
+                is_correct = correct_words == submitted_set
+
+            if is_correct:
+                earned_points += question['points']
+
+            results.append({
+                'question_id': question_id,
+                'correct': is_correct,
+                'points_earned': question['points'] if is_correct else 0
+            })
+
+        # Calculate percentage
+        percentage = (earned_points / total_points * 100) if total_points > 0 else 0
+        passed = percentage >= quiz['pass_score']
+
+        response_data = {
+            'total_points': total_points,
+            'earned_points': earned_points,
+            'percentage': round(percentage, 2),
+            'passed': passed,
+            'results': results
+        }
+
+        return Response(response_data)
+
+    # quiz attempts (without correct answers)
+    @action(detail=True, methods=['get'])
+    def attempt(self, request, pk=None):
+        quiz = quizzes_collection.find_one({'_id': ObjectId(pk)})
+        if not quiz:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        
+        # Get questions and remove correct answers
+        questions = list(questions_collection.find({'quiz_id': ObjectId(pk)}))
+        for question in questions:
+            if 'options' in question:
+                if 'correct_answer' in question['options']:
+                    del question['options']['correct_answer']
+            if 'word_select_text' in question:
+                if 'correct_words' in question['word_select_text']:
+                    del question['word_select_text']['correct_words']
+        
+        quiz['questions'] = questions
+        serializer = QuizSerializer(quiz)
+        return Response(serializer.data)
 
 class QuestionViewSet(viewsets.ViewSet):
     """

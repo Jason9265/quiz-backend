@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'quiz.apps.QuizConfig',
+    'accounts.apps.AccountsConfig',
 ]
 
 MIDDLEWARE = [

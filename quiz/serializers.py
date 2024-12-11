@@ -32,3 +32,10 @@ class QuizSerializer(serializers.Serializer):
         data = super().to_representation(instance)
         data['id'] = str(instance['_id'])
         return data
+
+class QuizAnswerSerializer(serializers.Serializer):
+    question_id = serializers.CharField()
+    answer = serializers.JSONField() 
+
+class QuizSubmissionSerializer(serializers.Serializer):
+    answers = QuizAnswerSerializer(many=True)
