@@ -46,11 +46,12 @@ class QuizViewSet(viewsets.ViewSet):
     # endpoint for answer submission
     @action(detail=True, methods=['post'])
     def submit(self, request, pk=None):
-        quiz = quizzes_collection.find_one({'_id': ObjectId(pk)})
+        quiz_id = ObjectId(pk)
+        quiz = quizzes_collection.find_one({'_id': quiz_id})
         if not quiz:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-        questions = list(questions_collection.find({'quiz_id': ObjectId(pk)}))
+        questions = list(questions_collection.find({'quiz_id': quiz_id}))
         
         total_points = 0
         earned_points = 0
@@ -106,6 +107,7 @@ class QuizViewSet(viewsets.ViewSet):
         passed = percentage >= quiz['pass_score']
 
         response_data = {
+            'quiz_id': str(quiz_id),
             'total_points': total_points,
             'earned_points': earned_points,
             'percentage': round(percentage, 2),
