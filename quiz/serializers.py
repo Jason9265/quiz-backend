@@ -8,7 +8,6 @@ class QuestionSerializer(serializers.Serializer):
     text = serializers.CharField()
     points = serializers.IntegerField()
     options = serializers.DictField(required=False)
-    word_select_text = serializers.DictField(required=False)
 
     def to_representation(self, instance):
         data = super().to_representation(instance)

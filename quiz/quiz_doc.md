@@ -42,10 +42,6 @@
         "options": {
           "choices": ["string"],
           "correct_answer": "string or array"
-        },
-        "word_select_text": {
-          "text": "string",
-          "correct_words": ["string"]
         }
       }
     ]
@@ -73,9 +69,6 @@
         "points": "integer",
         "options": {
           "choices": ["string"]
-        },
-        "word_select_text": {
-          "text": "string"
         }
       }
     ]
@@ -163,11 +156,7 @@
 ### Word Select
 ```json
 {
-  "question_type": "word_select",
-  "word_select_text": {
-    "text": "Complete sentence with [blank] words",
-    "correct_words": ["missing"]
-  }
+  "question_type": "word_select"
 }
 ```
 

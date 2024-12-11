@@ -115,12 +115,8 @@ class QuizViewSet(viewsets.ViewSet):
         # Get questions and remove correct answers
         questions = list(questions_collection.find({'quiz_id': ObjectId(pk)}))
         for question in questions:
-            if 'options' in question:
-                if 'correct_answer' in question['options']:
-                    del question['options']['correct_answer']
-            if 'word_select_text' in question:
-                if 'correct_words' in question['word_select_text']:
-                    del question['word_select_text']['correct_words']
+            if 'correct_answer' in question['options']:
+                del question['options']['correct_answer']
         
         quiz['questions'] = questions
         serializer = QuizSerializer(quiz)

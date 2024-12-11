@@ -53,9 +53,7 @@ class Question(models.Model):
             'quiz_id': ObjectId(quiz_id),
             'question_type': question_type,
             'text': text,
-            'points': points,
-            'options': options or {},
-            'word_select_text': word_select_text or {}
+            'points': points
         }
         result = questions_collection.insert_one(question_data)
         return str(result.inserted_id)
