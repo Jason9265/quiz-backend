@@ -16,8 +16,6 @@ class QuizViewSet(viewsets.ViewSet):
     create: POST /api/quizzes/
     submit: POST /api/quizzes/{id}/submit/
     attempt: GET /api/quizzes/{id}/attempt/
-    update: PUT /api/quizzes/{id}/
-    partial_update: PATCH /api/quizzes/{id}/
     delete: DELETE /api/quizzes/{id}/
     """
     def list(self, request):
@@ -79,12 +77,8 @@ class QuizViewSet(viewsets.ViewSet):
                 is_correct = (
                     submitted_answer == question['options']['correct_answer']
                 )
-            elif question['question_type'] == 'multiple':
-                correct_answers = set(question['options']['correct_answer'])
-                submitted_set = set(submitted_answer if isinstance(submitted_answer, list) else [submitted_answer])
-                is_correct = correct_answers == submitted_set
-            elif question['question_type'] == 'word_select':
-                correct_words = set(question['word_select_text']['correct_words'])
+            else:
+                correct_words = set(question['options']['correct_answer'])
                 submitted_set = set(submitted_answer if isinstance(submitted_answer, list) else [submitted_answer])
                 is_correct = correct_words == submitted_set
 
@@ -132,14 +126,24 @@ class QuizViewSet(viewsets.ViewSet):
         serializer = QuizSerializer(quiz)
         return Response(serializer.data)
 
+    def delete(self, request, pk=None):
+        quiz = quizzes_collection.find_one({'_id': ObjectId(pk)})
+        if not quiz:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        
+        # Delete all questions associated with this quiz
+        questions_collection.delete_many({'quiz_id': ObjectId(pk)})
+        # Delete the quiz itself
+        quizzes_collection.delete_one({'_id': ObjectId(pk)})
+        
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 class QuestionViewSet(viewsets.ViewSet):
     """
     CRUD endpoints for Quiz:
     list: GET /api/questions/
     retrieve: GET /api/questions/{id}/
     create: POST /api/questions/
-    update: PUT /api/questions/{id}/
-    partial_update: PATCH /api/questions/{id}/
     delete: DELETE /api/questions/{id}/
     """
     def list(self, request):
@@ -149,6 +153,13 @@ class QuestionViewSet(viewsets.ViewSet):
         serializer = QuestionSerializer(questions, many=True)
         return Response(serializer.data)
 
+    def retrieve(self, request, pk=None):
+        question = questions_collection.find_one({'_id': ObjectId(pk)})
+        if not question:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        serializer = QuestionSerializer(question)
+        return Response(serializer.data)
+
     def create(self, request):
         serializer = QuestionSerializer(data=request.data)
         if serializer.is_valid():
@@ -156,3 +167,11 @@ class QuestionViewSet(viewsets.ViewSet):
             question = questions_collection.find_one({'_id': ObjectId(question_id)})
             return Response(QuestionSerializer(question).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk=None):
+        question = questions_collection.find_one({'_id': ObjectId(pk)})
+        if not question:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        
+        questions_collection.delete_one({'_id': ObjectId(pk)})
+        return Response(status=status.HTTP_204_NO_CONTENT)
