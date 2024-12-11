@@ -85,11 +85,21 @@ class QuizViewSet(viewsets.ViewSet):
             if is_correct:
                 earned_points += question['points']
 
-            results.append({
+            result = {
                 'question_id': question_id,
+                'question_text': question['text'],
                 'correct': is_correct,
-                'points_earned': question['points'] if is_correct else 0
-            })
+                'points_earned': question['points'] if is_correct else 0,
+                'submitted_answer': submitted_answer,
+                'correct_answer': question['options']['correct_answer']
+            }
+
+            if question['question_type'] == 'single' or question['question_type'] == 'multiple':
+                result['question_choices'] = question['options']['choices']
+            elif question['question_type'] == 'word_select':
+                result['question_sentence'] = question['options']['text']
+
+            results.append(result)
 
         # Calculate percentage
         percentage = (earned_points / total_points * 100) if total_points > 0 else 0
